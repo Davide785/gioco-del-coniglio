@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gioco del Coniglio</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        .game-container {
+            position: relative;
+            width: 600px;
+            height: 200px;
+            background-color: #fff;
+            border: 2px solid #000;
+            overflow: hidden;
+        }
+        .rabbit {
+            position: absolute;
+            bottom: 0;
+            width: 50px;
+            height: 50px;
+            background-color: #ffcc00;
+            left: 50px;
+        }
+        .carrot {
+            position: absolute;
+            bottom: 0;
+            width: 30px;
+            height: 60px;
+            background-color: orange;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="rabbit" id="rabbit"></div>
+    </div>
+    <script>
+        const rabbit = document.getElementById('rabbit');
+        let isJumping = false;
+        let gravity = 0.9;
+        let jumpHeight = 150;
+        let isGameOver = false;
+        let gameContainer = document.querySelector('.game-container');
+
+        document.addEventListener('keydown', control);
+
+        function control(e) {
+            if (e.keyCode === 32 && !isJumping) { // Space key to jump
+                jump();
+            }
+        }
+
+        function jump() {
+            let position = 0;
+            isJumping = true;
+
+            let upInterval = setInterval(() => {
+                if (position >= jumpHeight) {
+                    clearInterval(upInterval);
+
+                    let downInterval = setInterval(() => {
+                        if (position <= 0) {
+                            clearInterval(downInterval);
+                            isJumping = false;
+                        }
+                        position -= 5;
+                        position *= gravity;
+                        rabbit.style.bottom = `${position}px`;
+                    }, 20);
+                }
+                position += 20;
+                position *= gravity;
+                rabbit.style.bottom = `${position}px`;
+            }, 20);
+        }
+
+        function createCarrot() {
+            let carrot = document.createElement('div');
+            carrot.classList.add('carrot');
+            carrot.style.left = '600px';
+            gameContainer.appendChild(carrot);
+
+            let moveCarrot = setInterval(() => {
+                let carrotLeft = parseInt(window.getComputedStyle(carrot).getPropertyValue('left'));
+                if (carrotLeft <= 0) {
+                    clearInterval(moveCarrot);
+                    gameContainer.removeChild(carrot);
+                }
+                carrot.style.left = `${carrotLeft - 5}px`;
+
+                let rabbitBottom = parseInt(window.getComputedStyle(rabbit).getPropertyValue('bottom'));
+                if (carrotLeft > 0 && carrotLeft < 80 && rabbitBottom < 60) {
+                    clearInterval(moveCarrot);
+                    isGameOver = true;
+                    alert('Game Over');
+                    document.location.reload();
+                }
+            }, 20);
+
+            if (!isGameOver) {
+                setTimeout(createCarrot, 2000);
+            }
+        }
+
+        createCarrot();
+    </script>
+</body>
+</html>
